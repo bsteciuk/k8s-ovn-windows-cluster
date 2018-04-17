@@ -70,56 +70,59 @@ mkdir -p $HOME/.kube
 cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 
+#We don't need kube-proxy with the ovs/ovn setup, so delete the daemon set
+kubectl delete ds kube-proxy -n kube-system
 
 #This sets up rbac for ovn-kubernetes
 
- cat <<EOF | kubectl create -f -
- apiVersion: v1
- kind: ServiceAccount
- metadata:
-   name: ovn-controller
-   namespace: kube-system
- ---
- kind: ClusterRole
- apiVersion: rbac.authorization.k8s.io/v1beta1
- metadata:
-   name: ovn-controller
- rules:
-   - apiGroups:
-       - ""
-       - networking.k8s.io
-     resources:
-       - pods
-       - services
-       - endpoints
-       - namespaces
-       - networkpolicies
-       - nodes
-     verbs:
-       - get
-       - list
-       - watch
-   - apiGroups:
-       - ""
-     resources:
-       - nodes
-       - pods
-     verbs:
-       - patch
- ---
- kind: ClusterRoleBinding
- apiVersion: rbac.authorization.k8s.io/v1beta1
- metadata:
-   name: ovn-controller
- roleRef:
-   apiGroup: rbac.authorization.k8s.io
-   kind: ClusterRole
-   name: ovn-controller
- subjects:
- - kind: ServiceAccount
-   name: ovn-controller
-   namespace: kube-system
-EOF
+cat > /opt/ovn-kubernetes-rbac.yaml <<- END
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ovn-controller
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: ovn-controller
+rules:
+  - apiGroups:
+      - ""
+      - networking.k8s.io
+    resources:
+      - pods
+      - services
+      - endpoints
+      - namespaces
+      - networkpolicies
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+      - pods
+    verbs:
+      - patch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: ovn-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ovn-controller
+subjects:
+- kind: ServiceAccount
+  name: ovn-controller
+  namespace: kube-system
+END
 
 
 #Retrieve the token ovn-kubernetes will use to communicate with the cluster
@@ -129,11 +132,9 @@ TOKEN=$(kubectl get secrets -n kube-system $(kubectl get secrets -n kube-system 
 Make sure that the `MASTER_HOST` environment variable below is set correctly to your master nodes ip.
 
 ```bash
-MASTER_HOST=10.142.0.9
+MASTER_HOST=<MASTER_IP_ADDRESS>
 APISERVER=https://${MASTER_HOST}:6443
 HOSTNAME=$(hostname)
-
-
 
 #create the ovnkube service file
 cat > /etc/systemd/system/ovnkube.service <<- END
@@ -243,7 +244,7 @@ First, copy [init.ps1](init.ps1) to the windows node and execute it as Administr
 *Note for Windows Server 2016 RTM (build number 14393)*
   * You will need to set the following environment variable
     `setx -m CONTAINER_NETWORK "external"`
-  * Currently, kubelet.exe must be built from https://github.com/kubernetes/kubernetes/pull/61940
+  * Currently, kubelet.exe must be built from https://github.com/kubernetes/kubernetes/pull/61940 until it merges.
 
 
 The node will need to be rebooted before we can continue.
@@ -258,11 +259,12 @@ You must close this powershell window and open a new session to ensure the requi
 You can verify everything is ok by running `ovs-vsctl.exe --version`.  If you see version info displayed, you are all set. 
 
 
-Copy the kubernetes binaries we need into C:\k, and create the kubelet service
+Copy the kubernetes binaries we need into C:\k, and create the kubelet service (note, if using kubelet built from the PR mentioned above, you will need to copy it to the node)
 ```bash
 mkdir C:\k
+
 cp C:\kubeadm.exe C:\k
-cp C:\kubelet.exe C:\k
+cp C:\kubelet.exe C:\k 
 
 cd C:\k
 .\kubelet-service.exe install
@@ -291,7 +293,6 @@ ovn_host_subnet=10.0.6.0/24
 
 ```
 We will need ot use this value in the next step.
-
 
 
 
@@ -332,6 +333,41 @@ Add an entry to the hosts file for this machine (swap in the appropriate values)
 
 ```
 Add-Content C:\Windows\System32\drivers\etc\hosts "`r`n<IP_ADDRESS> <HOSTNAME>"
+```
+
+The ovn-kubernetes windows binaries have been built on your master (during init.sh).  You should find them at the following path on your master
+```bash
+/opt/ovn-kubernetes/go-controller/_output/go/windows/ovnkube.exe
+/opt/ovn-kubernetes/go-controller/_output/go/windows/ovn-k8s-cni-overlay.exe
+
+```
+
+Copy both of these binaries to `C:\cni` on your windows node.
+
+Run the following to create the ovn-k8s-cni-overlay config file
+```bash
+
+$ovnConfig=@"
+[default]
+mtu=1500
+conntrack-zone=64321
+
+[kubernetes]
+cacert="C:\\etc\\kubernetes\\pki\\ca.crt"
+
+[logging]
+loglevel=5
+logfile="C:\\var\\log\\ovnkube.log"
+
+[cni]
+conf-dir="C:\\cni-conf"
+plugin=ovn-k8s-cni-overlay
+"@
+
+
+
+$ovnConfig | Out-File 'C:\Program Files\Cloudbase Solutions\Open vSwitch\conf\ovn_k8s.conf'
+
 ```
 
 Lastly, we run ovnkube to complete the virtual network configuration

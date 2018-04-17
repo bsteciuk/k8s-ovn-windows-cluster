@@ -43,7 +43,7 @@ sudo apt-get install ovn-central=2.8.1-1 ovn-common=2.8.1-1 ovn-host=2.8.1-1 -y
 #Set docker cgroupdriver
 cat << EOF > /etc/docker/daemon.json
 {
-  "exec-opts": ["native.cgroupdriver=systemd"]
+  "exec-opts": ["native.cgroupdriver=cgroupfs"]
 }
 EOF
 
@@ -66,13 +66,14 @@ cd /opt
 git clone https://github.com/openvswitch/ovn-kubernetes
 
 cd ovn-kubernetes/go-controller
+#We are switching to PR with fixes for windows RTM
 git fetch origin pull/288/head:PR-288
 git checkout PR-288
 make all install
 make windows
 
 #copy the cni config
-cat << EOF > /etc/openvswitch
+cat << EOF > /etc/openvswitch/ovn_k8s.conf
 [default]
 mtu=1500
 conntrack-zone=64321
@@ -125,5 +126,4 @@ systemctl enable kubelet
 
 touch "${initTouchFile}"
 
-echo "Init complete... rebooting now"
-reboot
+echo "Initialization successful.  Please reboot the node."
