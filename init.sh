@@ -71,7 +71,23 @@ git checkout PR-288
 make all install
 make windows
 
+#copy the cni config
+cat << EOF > /etc/openvswitch
+[default]
+mtu=1500
+conntrack-zone=64321
 
+[kubernetes]
+cacert=/etc/kubernetes/pki/ca.crt
+
+[logging]
+loglevel=5
+logfile=/var/log/ovnkube.log
+
+[cni]
+conf-dir=/etc/cni/net.d
+plugin=ovn-k8s-cni-overlay
+EOF
 
 #Get cni bins and copy ovn-k8s-cni-overlay in
 

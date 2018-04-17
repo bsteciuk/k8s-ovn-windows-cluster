@@ -1,4 +1,7 @@
 
+
+# NOTE: This document is still a work in progress
+
 This document describes, step-by-step, how to configure a Kubernetes cluster comprised of:
 * One Linux (Ubuntu) machine acting as Kubernetes master node and OVN central database.
 * One Linux (Ubuntu) machine acting as Kubernetes worker node and OVN gateway node.
