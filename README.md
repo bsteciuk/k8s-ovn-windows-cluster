@@ -239,12 +239,15 @@ systemctl start ovnkube.service
 #### Windows node
 
 First, copy [init.ps1](init.ps1) to the windows node and execute it as Administrator from a powershell window
+*Note, you may lose RDP connectivity temporarily when running this script.*
 
 
-*Note for Windows Server 2016 RTM (build number 14393)*
+
+**Notes for Windows Server 2016 RTM (build number 14393)**
   * You will need to set the following environment variable
     `setx -m CONTAINER_NETWORK "external"`
   * Currently, kubelet.exe must be built from https://github.com/kubernetes/kubernetes/pull/61940 until it merges.
+  * There is a current limitation of one container per pod on 
 
 
 The node will need to be rebooted before we can continue.
@@ -262,9 +265,6 @@ You can verify everything is ok by running `ovs-vsctl.exe --version`.  If you se
 Copy the kubernetes binaries we need into C:\k, and create the kubelet service (note, if using kubelet built from the PR mentioned above, you will need to copy it to the node)
 ```bash
 mkdir C:\k
-
-cp C:\kubeadm.exe C:\k
-cp C:\kubelet.exe C:\k 
 
 cd C:\k
 .\kubelet-service.exe install
@@ -301,7 +301,7 @@ We will need ot use this value in the next step.
 $GATEWAY="<GATEWAY_IP>" #The first IP in the ovn_host_subnet for this node ex. "10.0.6.1"
 $SUBNET="<OVN_HOST_SUBNET>" #The ovn_host_subnet returned ex. "10.0.6.0/24"
 $INTERFACE_ALIAS="<NETWORK_INTERFACE_ALIAS>" #example "Ethernet"
-
+$a='$a'
 $configureScript=@"
 docker network create -d transparent --gateway $GATEWAY --subnet $SUBNET -o com.docker.network.windowsshim.interface="Ethernet" external
 sleep 2;
@@ -348,25 +348,26 @@ Run the following to create the ovn-k8s-cni-overlay config file
 ```bash
 
 $ovnConfig=@"
-[default]
-mtu=1500
-conntrack-zone=64321
-
-[kubernetes]
-cacert="C:\\etc\\kubernetes\\pki\\ca.crt"
-
-[logging]
-loglevel=5
-logfile="C:\\var\\log\\ovnkube.log"
-
-[cni]
-conf-dir="C:\\cni-conf"
-plugin=ovn-k8s-cni-overlay
+[default]`r`n
+mtu=1500`r`n
+conntrack-zone=64321`r`n
+`r`n
+[kubernetes]`r`n
+cacert="C:\\etc\\kubernetes\\pki\\ca.crt"`r`n
+`r`n
+[logging]`r`n
+loglevel=5`r`n
+logfile="C:\\var\\log\\ovnkube.log"`r`n
+`r`n
+[cni]`r`n
+conf-dir="C:\\cni-conf"`r`n
+plugin=ovn-k8s-cni-overlay`r`n
 "@
 
 
 
 $ovnConfig | Out-File 'C:\Program Files\Cloudbase Solutions\Open vSwitch\conf\ovn_k8s.conf'
+$ovnConfig | Out-File 'C:\test.conf'
 
 ```
 

@@ -42,3 +42,9 @@ $serviceFileText | Out-File 'C:\k\kubelet-service.xml'
 
 & 'C:\Program Files\7-Zip\7z.exe' e .\kubernetes-node-windows-amd64.tar.gz
 & 'C:\Program Files\7-Zip\7z.exe' e .\kubernetes-node-windows-amd64.tar
+
+cp C:\kubelet.exe C:\k
+cp C:\kubeadm.exe C:\k
+
+rm C:\kubernetes-node-windows-amd64.tar, C:\kubernetes-node-windows-amd64.tar.gz, C:\kubernetes-src.tar.gz, C:\LICENSES, C:\kubelet.exe, C:\kubeadm.exe, C:\kubectl.exe, C:\kube-proxy.exe
+
