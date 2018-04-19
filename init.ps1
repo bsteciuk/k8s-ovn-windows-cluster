@@ -9,11 +9,9 @@ Install-Module -Name DockerMsftProvider -Repository PSGallery -Force
 Install-Package -Name docker -ProviderName DockerMsftProvider -Force
 
 cd C:\
+
+mkdir C:\cni
 mkdir C:\k
-
-Start-BitsTransfer https://storage.googleapis.com/apprenda-sig-windows/ovn-k8s-2.1.zip -Destination C:\cni.zip
-
-Expand-Archive cni.zip
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 Invoke-WebRequest -Uri https://github.com/kohsuke/winsw/releases/download/winsw-v2.1.2/WinSW.NET4.exe -OutFile C:\k\kubelet-service.exe
