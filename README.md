@@ -2,7 +2,7 @@
 
 # NOTE: This document is still a work in progress
 
-This document describes, step-by-step, how to configure a Kubernetes cluster comprised of:
+This document will walk you through, step-by-step, how to stand up a Kubernetes cluster comprised of:
 * One Linux (Ubuntu) machine acting as Kubernetes master node and OVN central database.
 * One Linux (Ubuntu) machine acting as Kubernetes worker node and OVN gateway node.
 * One Windows machine acting as Kubernetes worker node.
@@ -19,7 +19,7 @@ Copy [init.sh](init.sh) to the node, make it executable, and execute it as an el
 This will install and configure the following:
  * Docker
  * Open vSwitch
- * Kubernetes v1.10.0 (update k8sVersion var in script to change version)
+ * Kubernetes v1.10.0 (update k8sVersion variable in init.sh script to change version)
 
 ```bash
 chmod +x init.sh
@@ -43,13 +43,13 @@ This will:
 * ovn-kubernetes service account, cluster role, and cluster role binding
 * configure ovn-kubernetes as a service and start it
 
-**Take note of the kubeadm output, specifically the join line (example below), which will be needed to join your worker nodes to the cluster, as well as the token value.**
+**We will need to take note of two lines of output from this script.**
 
-Example kubeadm line: 
+The "kubeadm join" line, gives the kubeadm join command used to add other nodes to our cluster.  Example below:
 ```
 kubeadm join 10.142.0.9:6443 --token mgeq2z.os1y2nqg5hxs3ga5 --discovery-token-ca-cert-hash sha256:585da15f1f977d1ac900e6aee1a646df1331efc2cfa1ea6e934f5ccc8829d608
 ```
-Example token line: 
+The token line provides us with the token that ovn-kubernetes will use to authenticate against the api server.  Example below:
 ```
 Token: eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJvdm4tY29udHJvbGxlci10b2tlbi1xamhjZyIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJvdm4tY29udHJvbGxlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjlmNTU3MjQ1LTQzMmEtMTFlOC1hNTExLTQyMDEwYThlMDAwOSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTpvdm4tY29udHJvbGxlciJ9.bWjrRX452E6zCrTQ47sc1XnfFzr33sqojyI7v27Hnic7O7U4IPcwVYkeXkMfTw4ayeLdrwEA-pelE_Lj1G_HDeS3X8yrv1tzuZr_2v2caTzkEV_bXU0p6t4kjd62wJaUNEtA--9FlRSQOPtDrDJDjLkuTdb-QYVMkFX1TsuBPh_axLCiyC7xPEUh3S8cv5PlH1D9l0RO7Nsrl1eM2TGnYa3Vrl3xMCqOBokS0hXARm5iawQP8B7c56NuOgRZtsWYbIUBfviRsj4Om8jsSzy80JAHg2oaW5lqvPWYdK5ggVK4fCSBeR_V6mt-6Vgg7qlchz1TL-gD6l3rc7oHSHqxtw
 ```
@@ -62,11 +62,11 @@ sudo ./configure-master.sh -m <MASTER_IP>
 
 #### Worker node
 
-On the worker node, we'll need to join the cluster using the kubeadm join command we saved from the master node
+On the worker node, we'll need to join the cluster using the kubeadm join command we saved from the master node in the previous step.
 
 ```bash
-#Example - use the one returned from 'kubeadm init' on your master node. 
-# kubeadm join --token c4892a.5a8832696eebe8e6 10.142.0.10:6443 --discovery-token-ca-cert-hash sha256:0073fc242f11da7d775c25684ee3aeed0a4f002a14a2ac91709fb8f41884243e
+#Example - use the command and values returned from 'kubeadm init' on your master node. 
+kubeadm join --token c4892a.5a8832696eebe8e6 10.142.0.10:6443 --discovery-token-ca-cert-hash sha256:0073fc242f11da7d775c25684ee3aeed0a4f002a14a2ac91709fb8f41884243e
 
 ```
 

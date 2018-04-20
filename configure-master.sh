@@ -165,4 +165,4 @@ systemctl enable ovnkube.service
 systemctl start ovnkube.service
 
 echo "Token: ${token}";
-echo "Configuration complete.Make sure to save the 'kubeadm join' command that was output.  It will be required to join workers to your cluster";
+echo "Configuration complete.  Make sure to save the 'kubeadm join' command that was output.  It will be required to join workers to your cluster.";
