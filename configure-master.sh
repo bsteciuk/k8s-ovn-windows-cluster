@@ -62,6 +62,7 @@ validateArgs
 ovn-nbctl set-connection ptcp:6641
 ovn-sbctl set-connection ptcp:6642
 
+
 #init the master node
 #Take note of the kubeadm output, specifically the join line, which will be needed to join your worker nodes to the cluster.
 kubeadm init --kubernetes-version ${k8sVersion} --pod-network-cidr ${k8sPodNetworkCidr} --service-cidr ${k8sServiceCidr} --token-ttl ${tokenTTL}

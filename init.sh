@@ -42,6 +42,9 @@ cat << EOF > /etc/docker/daemon.json
 }
 EOF
 
+#disable swap
+swapoff -a
+
 #Get kubernetes binaries and extract to /opt/kubernetes
 cd /tmp
 
