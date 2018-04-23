@@ -18,7 +18,7 @@ function usage() {
     echo "    -g, --gateway-address  Required: The external default gateway which is used as a next hop by OVN gateway.  This is many times just the default gateway of the node in question."
     echo "    -p, --pod-network      Optional: Cluster wide IP subnet to use. (default ${k8sPodNetworkCidr})"
     echo "    -s, --service-network  Optional: A CIDR notation IP range from which k8s assigns service cluster IPs. This should be the same as the one provided for kube-apiserver \"-service-cluster-ip-range\" option. (default ${k8sServiceCidr})"
-    echo "    --help                 display help"
+    echo "    -h, --help             display help"
     exit 1
 }
 
@@ -55,7 +55,7 @@ while true; do
     -g | --gateway-address  ) gatewayAddress="$2"; shift ;;
     -p | --pod-network      ) k8sPodNetworkCidr="$2"; shift ;;
     -s | --service-network  ) k8sServiceCidr="$2"; shift ;;
-    --help ) usage;;
+    -h |--help ) usage;;
     -- ) shift; break ;;
         -*) echo "ERROR: unrecognized option $1"; exit 1;;
     * ) break ;;

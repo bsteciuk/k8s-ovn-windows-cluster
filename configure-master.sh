@@ -17,8 +17,8 @@ function usage() {
     echo "    -t, --token-ttl        Optional: The duration before the bootstrap token is automatically deleted. If set to '0', the token will never expire. (default ${tokenTTL})"
     echo "    -p, --pod-network      Optional: Cluster wide IP subnet to use. (default ${k8sPodNetworkCidr})"
     echo "    -s, --service-network  Optional: A CIDR notation IP range from which k8s assigns service cluster IPs. This should be the same as the one provided for kube-apiserver \"-service-cluster-ip-range\" option. (default ${k8sServiceCidr})"
-    echo "    -k. --k8s-version      Optional: Kubernetes version to pass to kubeadm.  (default ${k8sVersion})"
-    echo "    --help                 display help"
+    echo "    -k, --k8s-version      Optional: Kubernetes version to pass to kubeadm.  (default ${k8sVersion})"
+    echo "    -h, --help             display help"
     exit 1
 }
 
@@ -47,7 +47,7 @@ while true; do
     -p | --pod-network      ) k8sPodNetworkCidr="$2"; shift ;;
     -s | --service-network  ) k8sServiceCidr="$2"; shift ;;
     -k | --k8s-version      ) k8sVersion="$2"; shift ;;
-    --help ) usage;;
+    -h |--help ) usage;;
     -- ) shift; break ;;
         -*) echo "ERROR: unrecognized option $1"; exit 1;;
     * ) break ;;
@@ -62,15 +62,15 @@ validateArgs
 ovn-nbctl set-connection ptcp:6641
 ovn-sbctl set-connection ptcp:6642
 
-
+swapoff -a
 #init the master node
 #Take note of the kubeadm output, specifically the join line, which will be needed to join your worker nodes to the cluster.
-kubeadm init --kubernetes-version ${k8sVersion} --pod-network-cidr ${k8sPodNetworkCidr} --service-cidr ${k8sServiceCidr} --token-ttl ${tokenTTL}
+kubeadm init --kubernetes-version ${k8sVersion} --apiserver-advertise-address ${masterIp} --pod-network-cidr ${k8sPodNetworkCidr} --service-cidr ${k8sServiceCidr} --token-ttl ${tokenTTL}
 
 #This will setup kubectl to talk with the cluster
 mkdir -p $HOME/.kube
 cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-chown $(id -u):$(id -g) $HOME/.kube/config
+chown $(id -au):$(id -g) $HOME/.kube/config
 
 #We don't need kube-proxy with the ovs/ovn setup, so delete the daemon set
 kubectl delete ds kube-proxy -n kube-system

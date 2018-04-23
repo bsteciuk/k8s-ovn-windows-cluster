@@ -65,6 +65,9 @@ sudo ./configure-master.sh -m <MASTER_IP>
 On the worker node, we'll need to join the cluster using the kubeadm join command we saved from the master node in the previous step.
 
 ```bash
+#disable swap
+swapoff -a 
+
 #Example - use the command and values returned from 'kubeadm init' on your master node. 
 kubeadm join --token c4892a.5a8832696eebe8e6 10.142.0.10:6443 --discovery-token-ca-cert-hash sha256:0073fc242f11da7d775c25684ee3aeed0a4f002a14a2ac91709fb8f41884243e
 
