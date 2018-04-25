@@ -13,7 +13,7 @@ function usage() {
     echo
     echo "Options:"
     echo "    -m, --master-ip        Required: The external IP address of the master node"
-    echo "    -t, --token            Required: The Kubernetes API authentication token"
+    echo "    -t, --token            Required: The Kubernetes API authentication token, or path to file containing the token"
     echo "    -i, --interface-name   Required: The interface in minions that will be the gateway interface."
     echo "    -g, --gateway-address  Required: The external default gateway which is used as a next hop by OVN gateway.  This is many times just the default gateway of the node in question."
     echo "    -p, --pod-network      Optional: Cluster wide IP subnet to use. (default ${k8sPodNetworkCidr})"
@@ -65,6 +65,10 @@ done
 
 
 validateArgs
+
+if [ -f ${token} ]; then
+    token=$(cat ${token});
+fi
 
 #create the ovnkube service file
 cat > /etc/systemd/system/ovnkube.service <<- END
