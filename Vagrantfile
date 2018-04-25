@@ -18,7 +18,7 @@ Vagrant.configure("2") do |config|
             vb.name = 'master'
             vb.memory = 1024
         end
-        config.vm.provision "shell", inline: $hosts_script
+        linux.vm.provision "shell", inline: $hosts_script
     end
     #master
     config.vm.define "worker" do |linux|
@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
                 '--nicpromisc3', "allow-all"
             ]
         end
-        config.vm.provision "shell", inline: $hosts_script
+        linux.vm.provision "shell", inline: $hosts_script
     end
     #master
     config.vm.define "windows" do |windows|
@@ -47,6 +47,5 @@ Vagrant.configure("2") do |config|
     config.vm.provider "virtualbox" do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
-      v.customize ["modifyvm", :id, "--nictype1", "virtio"]
     end
 end
