@@ -18,6 +18,7 @@ function usage() {
     echo "    -p, --pod-network      Optional: Cluster wide IP subnet to use. (default ${k8sPodNetworkCidr})"
     echo "    -s, --service-network  Optional: A CIDR notation IP range from which k8s assigns service cluster IPs. This should be the same as the one provided for kube-apiserver \"-service-cluster-ip-range\" option. (default ${k8sServiceCidr})"
     echo "    -k, --k8s-version      Optional: Kubernetes version to pass to kubeadm.  (default ${k8sVersion})"
+    echo "    -j, --kubeadm-token    Optional: Token used by kubeadm to allow other nodes to join"
     echo "    -h, --help             display help"
     exit 1
 }
@@ -47,6 +48,7 @@ while true; do
     -p | --pod-network      ) k8sPodNetworkCidr="$2"; shift ;;
     -s | --service-network  ) k8sServiceCidr="$2"; shift ;;
     -k | --k8s-version      ) k8sVersion="$2"; shift ;;
+    -j | --kubeadm-token    ) kubeadmToken="$2"; shift ;;
     -h |--help ) usage;;
     -- ) shift; break ;;
         -*) echo "ERROR: unrecognized option $1"; exit 1;;
@@ -65,7 +67,11 @@ ovn-sbctl set-connection ptcp:6642
 swapoff -a
 #init the master node
 #Take note of the kubeadm output, specifically the join line, which will be needed to join your worker nodes to the cluster.
-kubeadm init --kubernetes-version ${k8sVersion} --apiserver-advertise-address ${masterIp} --pod-network-cidr ${k8sPodNetworkCidr} --service-cidr ${k8sServiceCidr} --token-ttl ${tokenTTL}
+if [ -z "${kubeadmToken}" ]; then 
+	kubeadm init --kubernetes-version ${k8sVersion} --apiserver-advertise-address ${masterIp} --pod-network-cidr ${k8sPodNetworkCidr} --service-cidr ${k8sServiceCidr} --token-ttl ${tokenTTL}
+else 
+	kubeadm init --kubernetes-version ${k8sVersion} --apiserver-advertise-address ${masterIp} --pod-network-cidr ${k8sPodNetworkCidr} --service-cidr ${k8sServiceCidr} --token-ttl ${tokenTTL} --token ${kubeadmToken}
+fi
 
 #This will setup kubectl to talk with the cluster
 mkdir -p $HOME/.kube
@@ -129,6 +135,8 @@ kubectl create -f /opt/ovn-kubernetes-rbac.yaml
 
 #Retrieve the token ovn-kubernetes will use to communicate with the cluster
 token=$(kubectl get secrets -n kube-system $(kubectl get secrets -n kube-system | grep ovn-controller-token | cut -f1 -d ' ') -o yaml | grep token: | cut -f2 -d":" | tr -d ' ' | tr -d '\t' | base64 -d)
+
+echo ${token} > /vagrant/token
 
 apiServer=https://${masterIp}:6443
 hostname=$(hostname)
