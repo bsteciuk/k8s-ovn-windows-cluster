@@ -25,7 +25,7 @@ sudo su -c "echo \"deb-src http://archive.ubuntu.com/ubuntu/ xenial main restric
 
 sudo apt-get update
 
-apt-get install -y docker.io golang-1.9-go python-six apt-transport-https ca-certificates openssl \
+apt-get install -y linux-headers-4.4.0-87-generic docker.io golang-1.9-go python-six apt-transport-https ca-certificates openssl \
  python-pip openvswitch-datapath-dkms=2.8.1-1 openvswitch-switch=2.8.1-1 openvswitch-common=2.8.1-1 \
  libopenvswitch=2.8.1-1 ovn-central=2.8.1-1 ovn-common=2.8.1-1 ovn-host=2.8.1-1
 
