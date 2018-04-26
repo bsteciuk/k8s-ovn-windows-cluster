@@ -136,7 +136,9 @@ kubectl create -f /opt/ovn-kubernetes-rbac.yaml
 #Retrieve the token ovn-kubernetes will use to communicate with the cluster
 token=$(kubectl get secrets -n kube-system $(kubectl get secrets -n kube-system | grep ovn-controller-token | cut -f1 -d ' ') -o yaml | grep token: | cut -f2 -d":" | tr -d ' ' | tr -d '\t' | base64 -d)
 
-echo ${token} > /vagrant/token
+if [ -d "/vagrant/" ]; then
+  echo ${token} > /vagrant/token
+fi
 
 apiServer=https://${masterIp}:6443
 hostname=$(hostname)

@@ -25,12 +25,17 @@ sudo su -c "echo \"deb-src http://archive.ubuntu.com/ubuntu/ xenial main restric
 
 sudo apt-get update
 
-apt-get install -y linux-headers-4.4.0-87-generic docker.io golang-1.9-go python-six apt-transport-https ca-certificates openssl \
+apt-get install -y linux-headers-4.4.0-87-generic docker.io python-six apt-transport-https ca-certificates openssl \
  python-pip openvswitch-datapath-dkms=2.8.1-1 openvswitch-switch=2.8.1-1 openvswitch-common=2.8.1-1 \
  libopenvswitch=2.8.1-1 ovn-central=2.8.1-1 ovn-common=2.8.1-1 ovn-host=2.8.1-1
 
 sudo apt-get build-dep dkms -y
-ln -s /usr/lib/go-1.9/bin/go /usr/bin/go
+
+cd /tmp
+wget -q https://dl.google.com/go/go1.10.1.linux-amd64.tar.gz
+tar -xvzf go1.10.1.linux-amd64.tar.gz -C /usr/local
+export PATH=$PATH:/usr/local/go/bin
+echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 
 sudo -H pip install ovs
 
