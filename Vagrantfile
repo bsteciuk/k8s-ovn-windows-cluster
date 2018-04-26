@@ -1,3 +1,19 @@
+
+#
+# Note this vagrant file requires vagrant-reload plugin
+# Use 'vagrant plugin install vagrant-reload' to install
+#
+if !Vagrant.has_plugin?('vagrant-reload')
+    puts 'vagrant-reload plugin required. To install simply do `vagrant plugin install vagrant-reload`'
+    abort
+end
+
+#Master node must be provisioned first
+
+
+go_path = ENV[ 'GOPATH' ]
+
+
 $hosts_script = <<SCRIPT
 sudo -- sh -c -e cat > /etc/hosts <<- END
 127.0.0.1 localhost
@@ -7,8 +23,6 @@ sudo -- sh -c -e cat > /etc/hosts <<- END
 END
 SCRIPT
 
-#Token to be used for kubeadm join.  Modify if desired. See https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/
-kubeadm_token = "nlmuc8.goov2ohg5tfsvxja"
 
 Vagrant.configure("2") do |config|
     #installer
@@ -26,8 +40,8 @@ Vagrant.configure("2") do |config|
         linux.vm.provision "shell", inline: $hosts_script
         linux.vm.provision "shell", path: "init.sh", privileged: true
         linux.vm.provision :reload
-	linux.vm.provision "shell", path: "configure-master.sh", privileged: true, :args => "-m '172.20.2.30' -j #{kubeadm_token}"
-        linux.vm.provision "shell", inline: "sudo kubeadm token create --print-join-command > /vagrant/join.sh && chmod +x /vagrant/join.sh"
+	    linux.vm.provision "shell", path: "configure-master.sh", privileged: true, :args => "-m '172.20.2.30'"
+        linux.vm.provision "join", type: "shell", inline: "sudo kubeadm token create --print-join-command > /vagrant/join.sh && chmod +x /vagrant/join.sh"
         
     end
     #master
@@ -35,9 +49,13 @@ Vagrant.configure("2") do |config|
         linux.vm.box = 'bento/ubuntu-16.04'
         linux.vm.hostname = 'worker'
         linux.vm.network 'private_network', ip: '172.20.2.31', auto_config: true
+
+	if !go_path.nil?
+	    linux.vm.synced_folder "#{go_path}", "/home/vagrant/go"
+	end
         linux.vm.provider :virtualbox do |vb|
             vb.name = 'worker'
-            vb.memory = 2048
+            vb.memory = 4096
             vb.customize [
                 'modifyvm', :id,
                 '--nicpromisc3', "allow-all"
@@ -47,8 +65,9 @@ Vagrant.configure("2") do |config|
             vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
         end
         linux.vm.provision "shell", inline: $hosts_script
+        linux.vm.provision "go-build", type: "shell", path: "init-go.sh", privileged: true, run: "never"
         linux.vm.provision "shell", path: "init.sh", privileged: true
-	linux.vm.provision :reload
+	    linux.vm.provision :reload
         linux.vm.provision "shell", path: "join.sh", privileged: true
         linux.vm.provision "shell", path: "configure-worker.sh", privileged: true, :args => "-t /vagrant/token -m 172.20.2.30 -i eth0 -g 10.0.2.2"
     end
