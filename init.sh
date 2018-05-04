@@ -12,6 +12,12 @@ if [ -f "${initTouchFile}" ]; then
 fi
 
 k8sVersion=v1.10.0
+# since ovn k8s doesn't publish actual versions, use the short git sha
+ovnk8sVersion=413b854
+# might need to change this URL to a more-official looking one
+# maybe put this in an Apprenda-owned fork of the ovn-kubernetes repo
+ovnk8sTarGz=ovn-kubernetes-rev-${ovnk8sVersion}.tar.gz
+ovnk8sBinsUrl=https://github.com/akochnev/k8s-ovn-windows-cluster/releases/download/ovn-prebuilt-${ovnk8sVersion}/${ovnk8sTarGz}
 
 #Install dependencies
 apt-get update -q
@@ -63,17 +69,15 @@ wget -q https://github.com/containernetworking/plugins/releases/download/v0.6.0/
 tar -xvzf cni-plugins-amd64-v0.6.0.tgz -C /opt/cni/bin
 
 
-#Get, build, and install ovn-kubernetes
-cd /opt
-git clone https://github.com/openvswitch/ovn-kubernetes
+#Get OVN-k8s pre-built binaries
+mkdir -p /opt/ovn-kubernetes
+wget -q ${ovnk8sBinsUrl}
+tar -xvzf ${ovnk8sTarGz} -C /opt/ovn-kubernetes
+cp /opt/ovn-kubernetes/bin/ovnkube /usr/bin/
+cp /opt/ovn-kubernetes/bin/ovn-k8s-overlay /usr/bin/
+cp /opt/ovn-kubernetes/bin/ovn-kube-util /usr/bin/
+cp /opt/ovn-kubernetes/bin/ovn-k8s-cni-overlay -t /usr/bin/
 
-cd ovn-kubernetes/go-controller
-#We are switching to PR with fixes for windows RTM
-git fetch origin pull/288/head:PR-288
-git checkout PR-288
-echo "Building ovn-kubernetes binaries... this may take a few minutes."
-make all install
-#make windows
 
 #copy the cni config
 cat << EOF > /etc/openvswitch/ovn_k8s.conf
