@@ -74,9 +74,9 @@ mkdir -p /opt/ovn-kubernetes
 wget -q ${ovnk8sBinsUrl}
 tar -xvzf ${ovnk8sTarGz} -C /opt/ovn-kubernetes
 cp /opt/ovn-kubernetes/bin/ovnkube /usr/bin/
-cp /opt/ovn-kubernetes/bin/ovn-k8s-overlay /usr/bin/
+cp /opt/ovn-kubernetes/bin/ovn-k8s-overlay /opt/cni/bin/
 cp /opt/ovn-kubernetes/bin/ovn-kube-util /usr/bin/
-cp /opt/ovn-kubernetes/bin/ovn-k8s-cni-overlay -t /usr/bin/
+cp /opt/ovn-kubernetes/bin/ovn-k8s-cni-overlay /opt/cni/bin/
 
 
 #copy the cni config
