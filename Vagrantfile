@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
         linux.vm.network 'private_network', ip: '172.20.2.30', auto_config: true
         linux.vm.provider :virtualbox do |vb|
             vb.name = 'master'
-            vb.memory = 1024
+            vb.memory = 2048
             vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
             vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
             vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
@@ -55,7 +55,7 @@ Vagrant.configure("2") do |config|
 	end
         linux.vm.provider :virtualbox do |vb|
             vb.name = 'worker'
-            vb.memory = 4096
+            vb.memory = 2048
             vb.customize [
                 'modifyvm', :id,
                 '--nicpromisc3', "allow-all"
@@ -69,7 +69,7 @@ Vagrant.configure("2") do |config|
         linux.vm.provision "shell", path: "init.sh", privileged: true
 	    linux.vm.provision :reload
         linux.vm.provision "shell", path: "join.sh", privileged: true
-        linux.vm.provision "shell", path: "configure-worker.sh", privileged: true, :args => "-t /vagrant/token -m 172.20.2.30 -i eth0 -g 10.0.2.2"
+        linux.vm.provision "shell", path: "configure-worker.sh", privileged: true, :args => "-t /vagrant/token -m 172.20.2.30 -i eth1 -g 10.0.2.2"
     end
     #master
     config.vm.define "windows" do |windows|
@@ -79,8 +79,13 @@ Vagrant.configure("2") do |config|
             vb.name = 'windows'
             vb.memory = 4096
         end
-        windows.vm.provision "shell", path: "init.ps1", privileged: true
+        windows.vm.provision "shell", path: "init.ps1", privileged: true, :args => "-networkInterfaceAlias 'Ethernet 2'"
         windows.vm.provision "shell", inline: 'setx -m CONTAINER_NETWORK "external"', privileged: true
         windows.vm.provision :reload
+	    windows.vm.provision "shell", path: "install-ovs.ps1", privileged: true
+	    windows.vm.provision :reload
+	    windows.vm.provision "configure", type: "shell", path: "configure-windows-vagrant.ps1", privileged: true, :args =>"-networkInterfaceAlias 'Ethernet 2' -vagrant"
+
     end
 end
+
