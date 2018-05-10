@@ -133,11 +133,15 @@ END
 
 kubectl create -f /opt/ovn-kubernetes-rbac.yaml
 
+
+until  kubectl get secrets -n kube-system | grep ovn-controller-token ; do echo "waiting for ovn-controller-token"; sleep 1; done
+
 #Retrieve the token ovn-kubernetes will use to communicate with the cluster
 token=$(kubectl get secrets -n kube-system $(kubectl get secrets -n kube-system | grep ovn-controller-token | cut -f1 -d ' ') -o yaml | grep token: | cut -f2 -d":" | tr -d ' ' | tr -d '\t' | base64 -d)
 
 if [ -d "/vagrant/" ]; then
   echo ${token} > /vagrant/token
+  cp /etc/kubernetes/admin.conf /vagrant/admin.config
 fi
 
 apiServer=https://${masterIp}:6443
