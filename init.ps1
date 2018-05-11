@@ -3,6 +3,8 @@ param (
 )
 
 netsh advfirewall set AllProfiles state off
+# The netkvm commands will fail in a local install
+# These are relevant only if running in GCP
 netsh netkvm setparam 0 *RscIPv4 0
 netsh netkvm restart 0
 

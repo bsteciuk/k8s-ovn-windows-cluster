@@ -1,4 +1,29 @@
-
+ <#
+.SYNOPSIS  
+    Configures windows worker node
+.LINK  
+    https://github.com/bsteciuk/k8s-ovn-windows-cluster
+    https://kubernetes.io/docs/getting-started-guides/windows/
+.EXAMPLE  
+   .\configure-windows.ps1 -networkInterfaceAlias "Ethernet 2"
+.FUNCTIONALITY  
+   Not sure How to specify or use  
+   Does not appear in basic, -full, or -detailed  
+   Should appear with -functionality
+.PARAMETER networkInterfaceAlias  
+   The network interface name that is provisioned for the cluster , what
+   comes back from ipconfig for the "external" interface where this node is accessible
+   , e.g. "Ethernet 2"
+.PARAMETER vagrant
+   Specifies whether this script is running in the context of vagrant, defaults to $false
+.PARAMETER masterIp
+   The IP address of the master node.
+.PARAMETER clusterSubnet
+   The subnet from which nodes are assigned subnets from for pod addresses.
+.PARAMETER serviceClusterIpRange
+   The subnet to be used by kubernetes services
+#>
+ 
 param (
     [Parameter(Mandatory=$true)][string]$networkInterfaceAlias,
     [Parameter(Mandatory=$false)][switch]$vagrant = $false,
@@ -17,6 +42,39 @@ if ($vagrant) {
     start-service kubelet
 }
 
+
+
+[int]$retryCount = 0;
+[bool]$success = $false
+
+$command = { $( C:\k\kubectl.exe describe node $( hostname ).ToLower() | Select-String ovn_host_subnet ).Line.Split("{=}")[1] }
+Do {
+    try
+    {
+        $ovnHostSubnet=Invoke-Command -ScriptBlock $command -ErrorAction Stop
+        $success = $true
+    } catch {
+
+        Write-Host "Node info not yet available from apiserver... sleeping 15s."
+        $retryCount++
+        Sleep 15
+    }
+
+
+} Until($retryCount -eq 6 -or $success)
+
+if( ! $success ){
+    Write-Host "Could not retrieve node info from apiserver"
+    exit 1
+}
+
+echo "ovnHostSubnet: $ovnHostSubnet"
+
+$gatewayIp="$($ovnHostSubnet -replace "(\d{1,3}\.\d{1,3}.\d{1,3}\.).*", '$1')1"
+echo "gatewayIp: $gatewayIp"
+
+$ipAddress = (Get-NetIPConfiguration  | where {$_.InterfaceAlias -eq $networkInterfaceAlias }).ipv4address.ipaddress
+Write-Host "ipAddress: $ipAddress"
 
 
 [int]$retryCount = 0;
