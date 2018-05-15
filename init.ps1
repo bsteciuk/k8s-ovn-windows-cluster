@@ -54,7 +54,7 @@ $serviceFileText=@"
       <name>kubelet</name>
       <description>This service runs kubelet.</description>
       <executable>C:\k\kubelet.exe</executable>
-      <arguments>--hostname-override=$(hostname) --v=6 $nodeIp --pod-infra-container-image=apprenda/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=10.96.0.10 --cluster-domain=cluster.local --bootstrap-kubeconfig="C:\etc\kubernetes\bootstrap-kubelet.conf" --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable="" --network-plugin=cni --cni-bin-dir="c:\cni" --cni-conf-dir "c:\cni-conf"</arguments>
+      <arguments>--hostname-override=$(hostname) --v=6 $nodeIp --pod-infra-container-image=apprenda/pause --resolv-conf="" --allow-privileged=true --enable-debugging-handlers --cluster-dns=172.16.1.10 --cluster-domain=cluster.local --bootstrap-kubeconfig="C:\etc\kubernetes\bootstrap-kubelet.conf" --kubeconfig=c:\k\config --hairpin-mode=promiscuous-bridge --image-pull-progress-deadline=20m --cgroups-per-qos=false --enforce-node-allocatable="" --network-plugin=cni --cni-bin-dir="c:\cni" --cni-conf-dir "c:\cni-conf"</arguments>
       <logmode>rotate</logmode>
 </service>
 "@

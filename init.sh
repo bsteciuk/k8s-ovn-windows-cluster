@@ -124,6 +124,7 @@ END
 mkdir -p /etc/systemd/system/kubelet.service.d
 cd /etc/systemd/system/kubelet.service.d
 wget -q https://raw.githubusercontent.com/kubernetes/kubernetes/${k8sVersion}/build/debs/10-kubeadm.conf
+sed -i.bak 's/--cluster-dns=10.96.0.10/--cluster-dns=172.16.1.10/g' 10-kubeadm.conf
 
 systemctl enable kubelet
 
