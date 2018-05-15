@@ -2,6 +2,9 @@
 
 # NOTE: This document is still a work in progress
 
+#### For automated vagrant provisioning/setup, simply checkout this repo, and run `vagrant up` from the root dir.
+---
+
 This document will walk you through, step-by-step, how to stand up a Kubernetes cluster comprised of:
 * One Linux (Ubuntu) machine acting as Kubernetes master node and OVN central database.
 * One Linux (Ubuntu) machine acting as Kubernetes worker node and OVN gateway node.
