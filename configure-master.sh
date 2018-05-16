@@ -155,6 +155,7 @@ Documentation=http://kubernetes.io/docs/
 
 [Service]
 ExecStart=/usr/bin/ovnkube -init-master ${hostname} \
+                           -init-node ${hostname} \
                            -k8s-cacert /etc/kubernetes/pki/ca.crt \
                            -k8s-token "${token}" \
                            -nodeport \
@@ -166,7 +167,7 @@ ExecStart=/usr/bin/ovnkube -init-master ${hostname} \
                            -sb-address "tcp://${masterIp}:6642" \
                            -loglevel 5 \
                            -logfile /var/log/ovnkube.log
-
+                           
 Restart=always
 StartLimitInterval=0
 RestartSec=10
