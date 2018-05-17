@@ -27,7 +27,7 @@ sudo apt-get update
 
 apt-get install -y linux-headers-4.4.0-87-generic docker.io python-six apt-transport-https ca-certificates openssl \
  python-pip openvswitch-datapath-dkms=2.8.1-1 openvswitch-switch=2.8.1-1 openvswitch-common=2.8.1-1 \
- libopenvswitch=2.8.1-1 ovn-central=2.8.1-1 ovn-common=2.8.1-1 ovn-host=2.8.1-1
+ libopenvswitch=2.8.1-1 ovn-central=2.8.1-1 ovn-common=2.8.1-1 ovn-host=2.8.1-1 socat
 
 sudo apt-get build-dep dkms -y
 
